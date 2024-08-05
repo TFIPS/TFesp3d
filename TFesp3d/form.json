@@ -1,0 +1,36 @@
+{
+	"elements":
+	[
+		{ "type": "SelectInstance", "name": "wfcID", "caption": "Webfront Instanz" },
+		{ "type": "ValidationTextBox", "name": "subject", "caption": "Betreff" },
+		{ "type": "ValidationTextBox", "name": "message", "caption": "Nachricht" },
+		{ "type": "Select", "name": "sound", "caption": "Push-Ton", 
+			"options": 
+			[
+				{ "label": "Alarm", "value": 0 },
+				{ "label": "Bell", "value": 1 },
+				{ "label": "Boom", "value": 2 },
+				{ "label": "Buzzer", "value": 3 },
+				{ "label": "Connected", "value": 4 },
+				{ "label": "Dark", "value": 5 },
+				{ "label": "Digital", "value": 6 },
+				{ "label": "Drums", "value": 7 },
+				{ "label": "Duck", "value": 8 },
+				{ "label": "Full", "value": 9 },
+				{ "label": "Happy", "value": 10 },
+				{ "label": "Horn", "value": 11 },
+				{ "label": "Inception", "value": 12 },
+				{ "label": "Kazoo", "value": 13 },
+				{ "label": "Roll", "value": 14 },
+				{ "label": "Siren", "value": 15 },
+				{ "label": "Space", "value": 16 },
+				{ "label": "Trickling", "value": 17 },
+				{ "label": "Turn", "value": 18 }
+			]
+		}
+	],
+	"actions":
+	[
+		{ "type": "Button", "label": "Daten abrufen", "onClick": "TFE3D_Test($id);" }
+	]
+}

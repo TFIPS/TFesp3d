@@ -1,0 +1,14 @@
+{
+	"id": "{B9F13C55-7063-4942-BE95-08E30BEAB31C}",
+	"name": "TFesp3d",
+	"type": 3,
+	"vendor": "luc-github",
+	"aliases": 
+	[
+		"ESP3D"
+	],
+	"parentRequirements": ["{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"],
+    "childRequirements": ["{018EF6B5-AB94-40C6-AA53-46943E824ACF}"],
+    "implemented": ["{018EF6B5-AB94-40C6-AA53-46943E824ACF}", "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"],
+	"prefix": "TFE3D"
+}
