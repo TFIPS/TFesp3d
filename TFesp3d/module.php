@@ -310,11 +310,11 @@ class TFesp3d extends IPSModule
 					$seconds += intval($matches[2][0])*86400;
 				}
 
-				if($seconds > 0 && $this->GetValue("printState") == 0)
+				if($seconds > 0 && ($this->GetValue("printState") == 0 || $this->GetTimerInterval("TimerGetPerMinute") == 0))
 				{
 					$this->SetPrintActive();
 				}
-				if($seconds == 0 && $this->GetValue("printState") == 1)
+				if($seconds == 0 && ($this->GetValue("printState") == 1 || $this->GetTimerInterval("TimerGetPerMinute") > 0))
 				{
 					$this->SetPrintStop();
 				}
