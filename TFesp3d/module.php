@@ -66,6 +66,7 @@ class TFesp3d extends IPSModule
 		$percentDone_ID		= $this->RegisterVariableInteger("percentDone", "Druckfortschritt", "TFE3D.percentDone", 12);
 		$isOnline_ID		= $this->RegisterVariableBoolean("isOnline", "Verbindung", "~Switch", 13);
 		$finishMessage_ID	= $this->RegisterVariableBoolean("finishMessage", "Nachricht bei Fertigstellung", "~Switch", 14);
+		$reconnect_ID		= $this->RegisterVariableBoolean("reconnect", "Drucker neu verbinden", "~Switch", 15);
 
 		IPS_SetIcon($xAxis_ID, "Distance");
 		IPS_SetIcon($yAxis_ID, "Distance");
@@ -75,8 +76,10 @@ class TFesp3d extends IPSModule
 		IPS_SetIcon($printTimeLeft_ID, "Hourglass");
 		IPS_SetIcon($isOnline_ID, "Power");
 		IPS_SetIcon($finishMessage_ID, "Mail");
+		IPS_SetIcon($reconnect_ID, "Plug");
 
 		$this->EnableAction("finishMessage");
+		$this->EnableAction("reconnect");
 
 		$this->SetTimerInterval("TimerGetPerMinute", 0);
 
@@ -96,7 +99,7 @@ class TFesp3d extends IPSModule
 			$this->SetValue("isOnline", true);
 					
 			$this->SendData("M155 S3"); // Send Temp 3 sek
-			$this->SendData("M31"); // get PrintTime
+			$this->SendData("M27 C");
 		}
 		else
 		{
@@ -126,7 +129,7 @@ class TFesp3d extends IPSModule
 					$this->SetValue("isOnline", true);
 					
 					$this->SendData("M155 S3"); // Send Temp 3 sek
-					$this->SendData("M31"); // get PrintTime
+					$this->SendData("M27 C");
 				}
 				else
 				{
@@ -189,6 +192,8 @@ class TFesp3d extends IPSModule
 		$this->SetValue("printState", 1);
 		$this->SetValue("printTimeCur", "0s");
 		$this->SetValue("printTimeLeft", "Wird berechnet...");
+		$this->SendData("M31");
+
 		$this->SetTimerInterval("TimerGetPerMinute", 60000);
 	}
 
@@ -199,6 +204,7 @@ class TFesp3d extends IPSModule
 		$this->SetValue("printTimeCur", "");
 		$this->SetValue("printTimeLeft", "");
 		$this->SetValue("percentDone", 0);
+		
 		$this->SetTimerInterval("TimerGetPerMinute", 0);
 	}
 	
@@ -293,6 +299,11 @@ class TFesp3d extends IPSModule
 			preg_match_all('/Print time:\s*((\d+d\s*)?(\d+h\s*)?(\d+m\s*)?(\d+s\s*))/', $data['Buffer'], $matches);
 			if(!empty($matches[0][0]))
 			{
+				if(!empty($matches[1][0]))
+				{
+					$this->SetValue("printTimeCur", $matches[1][0]);
+				}
+				
 				if(!empty($matches[5][0]))
 				{
 					$seconds = intval($matches[5][0]);
@@ -308,20 +319,6 @@ class TFesp3d extends IPSModule
 				if(!empty($matches[2][0]))
 				{
 					$seconds += intval($matches[2][0])*86400;
-				}
-
-				if($seconds > 0 && ($this->GetValue("printState") == 0 || $this->GetTimerInterval("TimerGetPerMinute") == 0))
-				{
-					$this->SetPrintActive();
-				}
-				if($seconds == 0 && ($this->GetValue("printState") == 1 || $this->GetTimerInterval("TimerGetPerMinute") > 0))
-				{
-					$this->SetPrintStop();
-				}
-
-				if(!empty($matches[1][0]))
-				{
-					$this->SetValue("printTimeCur", $matches[1][0]);
 				}
 				
 				if(isset($actualData) && $actualData >0)
@@ -361,9 +358,22 @@ class TFesp3d extends IPSModule
 			preg_match_all('/Current file:\s*[^ ]+\s+([^ \n]+\.gcode)/', $data['Buffer'], $matches);
 			if(!empty($matches[0][0]))
 			{
+				if($this->GetValue("printState") == 0)
+				{
+					$this->SetPrintActive();
+				}
 				if(!empty($matches[1][0]))
 				{
 					$this->SetValue("fileSet", $matches[1][0]);
+				}
+			}
+			// Printing not active
+			preg_match_all('/Not\sSD\sprinting/', $data['Buffer'], $matches);
+			if(!empty($matches[0][0]))
+			{
+				if($this->GetValue("printState") == 1)
+				{
+					$this->SetPrintStop();
 				}
 			}
 		}  
@@ -383,6 +393,17 @@ class TFesp3d extends IPSModule
 		{
 			case "finishMessage" :
 				$this->SetValue("finishMessage", $value);
+			break;
+			case "reconnect" :
+				$this->SetValue("reconnect", false);
+				$ws_ID = IPS_GetInstance($this->InstanceID)["ConnectionID"];
+        		if($ws_ID > 0) 
+				{
+					IPS_SetProperty($ws_ID, 'Active', false);
+					IPS_ApplyChanges($ws_ID);
+					IPS_SetProperty($ws_ID, 'Active', true);
+					IPS_ApplyChanges($ws_ID);
+				}
 			break;
 		}
 	}
